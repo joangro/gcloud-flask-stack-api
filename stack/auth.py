@@ -53,7 +53,14 @@ def login():
             if not user_entity:
                 error = "User not registered"
             else:
-                pass_entity = db.query_pass(database, username, password)
+                hashed_password = db.query_pass(database, username, password)
+                print(hashed_password)
+                import bcrypt
+                if bcrypt.hashpw(password.encode("utf-8"), hashed_password) == hashed_password:
+                    return redirect(url_for('index'))
+                else:
+                    error = "Wrong user/password combination"
+                
 
         flash(error)
     return render_template('login.html')

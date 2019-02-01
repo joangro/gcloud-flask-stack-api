@@ -21,3 +21,9 @@ def add_user(client, username, password):
     })
     client.put(new_entity)
 
+
+def query_pass(client, username, password):
+    query = client.query(kind='Stack-user')
+    query.add_filter('username', '=', username)
+    result = list(query.fetch())[0]
+    return result['password']

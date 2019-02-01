@@ -7,7 +7,11 @@ def create_app():
     app.register_blueprint(bp)
 
     @app.route("/")
-    def index():
+    def root():
         return "hello"
+    
+    def index():
+        pass
+    app.add_url_rule('/', 'index', index)
 
     return app
