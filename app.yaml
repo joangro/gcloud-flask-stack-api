@@ -1,0 +1,6 @@
+runtime: python37
+service: gcp-stack
+
+entrypoint: gunicorn -b :$PORT main:app
+
+

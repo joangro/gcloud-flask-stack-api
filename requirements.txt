@@ -1,0 +1,7 @@
+flask
+gunicorn
+stackapi
+pprint
+bcrypt
+google-cloud-datastore
+
