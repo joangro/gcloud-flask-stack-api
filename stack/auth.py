@@ -2,14 +2,13 @@ from flask import (
         redirect, request, Blueprint, session, abort, g, flash, render_template, url_for
     )
 
-from stackapi import StackAPI
-import urllib.request, urllib.parse
 import time
 import pprint
 
 
 from google.cloud.datastore import key, entity
 from . import db
+from .settings import auth
 
 
 bp = Blueprint('auth', __name__)
@@ -57,7 +56,7 @@ def login():
                 print(hashed_password)
                 import bcrypt
                 if bcrypt.hashpw(password.encode("utf-8"), hashed_password) == hashed_password:
-                    return redirect(url_for('index'))
+                    return redirect(url_for('auth.stackexchange_auth', scope='no_expiry'))
                 else:
                     error = "Wrong user/password combination"
                 
@@ -79,3 +78,35 @@ def get_loaded_user():
     else:
         #TODO
         pass 
+
+
+@bp.route('/<scope>/stackexchange_auth', methods=('GET', 'POST'))
+def stackexchange_auth(scope):
+    if request.method=='GET':
+        stack_url = 'https://stackoverflow.com/oauth?scope={scope}&client_id={client_id}&redirect_uri={redirect_uri}'
+        return redirect(stack_url.format(client_id=auth.client_id,
+                                         scope=scope,
+                                         redirect_uri=auth.root_uri + url_for('auth.redirect_flow', token="None")
+                                         ))
+
+@bp.route('/<token>/redirect_flow', methods=('GET', 'POST'))
+def redirect_flow(token):
+    if request.args.get("code") is not None:
+        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        data={
+            "client_id": auth.client_id,
+            "client_secret": auth.client_secret,
+            "redirect_uri": auth.root_uri + url_for('auth.redirect_flow', token="None"),
+            "code": request.args.get("code")
+            }
+        print(data["code"])
+        import urllib.request, urllib.parse
+        data = urllib.parse.urlencode(data).encode('utf-8')
+        req = urllib.request.Request("https://stackoverflow.com/oauth/access_token", headers=headers, data=data)
+        time.sleep(1)
+        res = urllib.request.urlopen(req)
+        return redirect(url_for("auth.redirect_flow", token=res.read().decode("UTF-8")))
+
+    else:
+        return redirect(url_for("stack.api.api_query", token=token))
+
