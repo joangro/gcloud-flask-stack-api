@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table class="center">
+{% for question in questions %}
+<TR>
+   <TD class="c1">{{question.title}}</TD>
+   <TD class="c2">{{question.date}}</TD>
+   <TD class="c3"><SPAN>{{question.tags}}</SPAN></TD>
+   <TD class="c4"><SPAN>{{question.views}}</SPAN></TD>
+   <TD class="c5"><a href="{{question.link}}">Link</a></TD>
+</TR>
+{% endfor %}
+</table>
+
+{% endblock %}
